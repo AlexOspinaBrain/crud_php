@@ -188,3 +188,20 @@ const editEmpleado = (id) =>{
       .catch(error => console.error('Error:', error));
 
 }
+
+const deleteEmpleado = (id) =>{
+
+    const deleteData = new FormData();
+    deleteData.append('id', id);
+
+    fetch(`../Controladores/Empleado.php`, {
+        method: 'DELETE',
+        body: deleteData,
+      }).then(res=>res.json())
+      .then(res => {
+        alert('Empleado eliminado');
+        location.reload();
+      })
+      .catch(error => console.error('Error:', error));
+
+}
