@@ -28,13 +28,17 @@
                 </div>
                 <form id="formEmpleado">
                 <div class="modal-body">
+                        <div class="alert alert-danger" role="alert" id="error" style="display: none;">
+                            
+                        </div>
                         <div class="mb-3">
                             <label for="nombre" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="nombre" aria-describedby="nombreHelp">
+                            <input type="text" class="form-control" id="nombre" name="nombre" aria-describedby="nombreHelp" required>
                             <div id="nombreHelp" class="form-text">Nombre completo del empleado.</div>
                           </div>
                         <div class="input-group mb-3">
-                            <input type="email" class="form-control" placeholder="Email del empleado" aria-label="Email" aria-describedby="email">
+                            
+                            <input type="email" id="email" name="email" class="form-control" placeholder="Email del empleado" aria-label="Email" aria-describedby="email" required>
                             <span class="input-group-text" id="email">@example.com</span>
                           </div>
                         <label class="form-label">Genero</label>
@@ -55,8 +59,8 @@
                           <label class="form-check-label" for="area">
                           Area
                             </label>
-                          <select class="form-select form-select-sm" id="area" aria-label=".form-select-sm example">
-                            <option selected>Seleccione el área del empleado</option>
+                          <select class="form-select form-select-sm" id="area" name="area" aria-label=".form-select-sm example" required>
+                            <option value="NO" selected>Seleccione el área del empleado</option>
                             <option value="1">One</option>
                             <option value="2">Two</option>
                             <option value="3">Three</option>
@@ -64,12 +68,11 @@
                         </div>
                         <div class="mb-3">
                             <label for="descrip" class="form-label">Descripción</label>
-                            <textarea class="form-control" id="descrip" aria-describedby="descripHelp">
-                            </textarea>
+                            <textarea class="form-control" required id="descrip" name="descrip" aria-describedby="descripHelp"></textarea>
                             <div id="descripHelp" class="form-text">Ingrese su experiencia.</div>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="boletin">
+                            <input class="form-check-input" type="checkbox" id="boletin" name="boletin">
                             <label class="form-check-label" for="boletin">
                               Deseo recibir boletin informativo
                             </label>

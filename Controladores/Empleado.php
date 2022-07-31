@@ -1,4 +1,5 @@
 <?php
+namespace Controladores;
 
 use Exception;
 
@@ -12,15 +13,17 @@ header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 $requestMethod = $_SERVER["REQUEST_METHOD"];
-$controller = new Empleados($link, $requestMethod);
+$controller = new Empleado($link, $requestMethod);
 $controller->httpMethod();
 
-class Empleados
+class Empleado
 {
     private $requestMethod;
 
-    private $successHTTPStatus = 200;
+    private const SUCCESSHTTPSTATUS = 200;
     private $validationFailedHTTPStatus = 400;
+    private const VALIDATIONERROR = 400;
+    private const SERVERERROR = 500;
 
     private $dbconnect;
 
@@ -81,7 +84,7 @@ class Empleados
         try {
             $this->response['data'] = $this->listEmpleados();
             $this->response['message'] = "OK";
-            $this->response['status'] = $this->successHTTPStatus;
+            $this->response['status'] = self::SUCCESSHTTPSTATUS;
         } catch (Exception $e) {
             $this->response['message'] = $e->getMessage();
             $this->response['status'] = $this->validationFailedHTTPStatus;
@@ -99,7 +102,24 @@ class Empleados
      */
     public function addEmpleado()
     {
-
+        if ($this->validationData()['status'] === 'error') {
+            $this->response['message'] = $this->validationData()['message'];
+            $this->response['status'] = self::VALIDATIONERROR;
+        } else {
+            try {
+                $data = [];
+                if($this->storeEmpleados($data)) {
+                    $this->response['message'] = "OK";
+                    $this->response['status'] = self::SUCCESSHTTPSTATUS;
+                } else {
+                    $this->response['message'] = "Error al guardar";
+                    $this->response['status'] = self::SERVERERROR;
+                }
+            } catch (Exception $e) {
+                $this->response['message'] = $e->getMessage();
+                $this->response['status'] = self::SERVERERROR;
+            }
+        }
         exit(json_encode($this->response, JSON_UNESCAPED_UNICODE));
     }
 
@@ -148,6 +168,26 @@ class Empleados
         }
 
         return $empleados;
+
+    }
+
+    private function validationData(){
+        $return = ['status' => 'error',
+                    'message' => 'Error de validación'];
+        return $return;
+    }
+
+    private function storeEmpleados($data){
+        
+        $usersQuery = "INSERT INTO empleados () VALUES ();";
+        
+        $stmt = mysqli_prepare($this->dbconnect, $usersQuery);
+        
+        mysqli_stmt_bind_param($stmt, 'ss', $orgUuid, $facilityId);
+
+        mysqli_stmt_execute($stmt);
+        
+        $stmt->close();
 
     }
 
