@@ -2,23 +2,31 @@ DROP TABLE IF EXISTS areas;
 CREATE TABLE areas
    (
       id int AUTO_INCREMENT,
-      Nombre varchar(255),
+      nombre varchar(255),
       PRIMARY KEY (ID)
    );
+INSERT INTO areas (nombre) VALUES ('Administrativo');
+INSERT INTO areas (nombre) VALUES ('Ventas');
+INSERT INTO areas (nombre) VALUES ('Informatica');
+INSERT INTO areas (nombre) VALUES ('Operaciones');
 
 DROP TABLE IF EXISTS roles;
 CREATE TABLE roles
    (
       id int AUTO_INCREMENT,
-      Nombre varchar(255),
+      nombre varchar(255),
       PRIMARY KEY (ID)
    );
+
+INSERT INTO roles (nombre) VALUES ('Profesional de proyectos - Desarrollador');
+INSERT INTO roles (nombre) VALUES ('Gerente estratégico');
+INSERT INTO roles (nombre) VALUES ('Auxiliar administrativo');
 
 DROP TABLE IF EXISTS empleados;
 CREATE TABLE empleados
    (
       id int AUTO_INCREMENT,
-      Nombre varchar(255),
+      nombre varchar(255),
       email varchar(255),
       sexo char(1),
       area_id int,
