@@ -38,18 +38,18 @@
                           </div>
                         <div class="input-group mb-3">
                             
-                            <input type="email" id="email" name="email" class="form-control" placeholder="Email del empleado" aria-label="Email" aria-describedby="email" required>
+                            <input type="text" id="email" name="email" class="form-control" placeholder="Email del empleado" aria-label="Email" aria-describedby="email" required>
                             <span class="input-group-text" id="email">@example.com</span>
                           </div>
                         <label class="form-label">Genero</label>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="sexo" id="m">
+                            <input class="form-check-input" type="radio" name="sexo" value="m">
                             <label class="form-check-label" for="m">
                               Masculino
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="sexo" id="f" checked>
+                            <input class="form-check-input" type="radio" name="sexo" value="f" checked>
                             <label class="form-check-label" for="f">
                               Femenino
                             </label>
@@ -61,9 +61,6 @@
                             </label>
                           <select class="form-select form-select-sm" id="area" name="area" aria-label=".form-select-sm example" required>
                             <option value="NO" selected>Seleccione el área del empleado</option>
-                            <option value="1">One</option>
-                            <option value="2">Two</option>
-                            <option value="3">Three</option>
                           </select>
                         </div>
                         <div class="mb-3">
@@ -94,7 +91,6 @@
     <table class="table table-striped">
         <thead>
             <tr>
-              <th scope="col">ID</th>
               <th scope="col">Nombre</th>
               <th scope="col">Email</th>
               <th scope="col">Sexo</th>
@@ -104,7 +100,7 @@
               <th scope="col">Eliminar</th>
             </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="tablaBody"></tbody>
     </table>
  </div>    
 </body>

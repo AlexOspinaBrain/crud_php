@@ -37,7 +37,7 @@ class Empleado
     {
         $this->requestMethod = $requestMethod;
         $this->dbconnect = $link;
-        mysqli_report(MYSQLI_REPORT_ALL);
+        mysqli_report(MYSQLI_REPORT_ALL & ~MYSQLI_REPORT_INDEX);
     }
 
     public function httpMethod()
@@ -102,19 +102,15 @@ class Empleado
      */
     public function addEmpleado()
     {
-        if ($this->validationData()['status'] === 'error') {
-            $this->response['message'] = $this->validationData()['message'];
+        $validation = $this->validationData();
+        if ($validation['status'] === 'error') {
+            $this->response['message'] = $validation['message'];
             $this->response['status'] = self::VALIDATIONERROR;
         } else {
             try {
-                $data = [];
-                if($this->storeEmpleados($data)) {
-                    $this->response['message'] = "OK";
-                    $this->response['status'] = self::SUCCESSHTTPSTATUS;
-                } else {
-                    $this->response['message'] = "Error al guardar";
-                    $this->response['status'] = self::SERVERERROR;
-                }
+                $this->storeEmpleados($validation['data']);
+                $this->response['status'] = self::SUCCESSHTTPSTATUS;
+                $this->response['message'] = "Empleado Guardado";
             } catch (Exception $e) {
                 $this->response['message'] = $e->getMessage();
                 $this->response['status'] = self::SERVERERROR;
@@ -152,38 +148,97 @@ class Empleado
     }
 
     private function listEmpleados(){
-        $usersQuery = "SELECT nombre, email, sexo, areas.nombre as area
+        $usersQuery = "SELECT empleados.nombre, email, sexo, areas.nombre as area,
+                    boletin
                     FROM empleados 
                     INNER JOIN areas
                     ON empleados.area_id = areas.id
                     ORDER BY empleados.nombre";
         
         $result = mysqli_query($this->dbconnect, $usersQuery);
-        $arrayResult = mysqli_fetch_array($result);
+        $arrayResult = mysqli_fetch_all($result, MYSQLI_ASSOC);
         
-        $empleados = [];
-
-        foreach ($arrayResult as $value) {
-            $empleados = $value;
-        }
-
-        return $empleados;
+        return $arrayResult;
 
     }
 
     private function validationData(){
-        $return = ['status' => 'error',
-                    'message' => 'Error de validación'];
+        $return = ['status' => 'ok',
+                    'message' => '',
+                    'data' => ''];
+        
+        $nombre = strtoupper($_POST['nombre']) ?? '';
+        $email = strtolower($_POST['email']) ?? '';
+        $area = $_POST['area'] ?? '';
+        $sexo = strtoupper($_POST['sexo']) ?? '';
+        $descrip = $_POST['descrip'] ?? '';
+        $boletin = $_POST['boletin'] ?? '';
+
+        if ($nombre === '') {
+            $return['message'] .= 'Nombre Requerido,';
+            $return['status'] = 'error';
+        } else {
+            setlocale(LC_ALL, "es_ES.ISO-8859-1");
+            if (preg_match("/^[a-zA-Z\sñáéíóúÁÉÍÓÚ]+$/", $nombre) == 0){
+                $return['message'] .= 'Nombre Invalido,';
+                $return['status'] = 'error';
+            }
+        }
+        
+        if ($email === '') {
+            $return['message'] .= 'Email Requerido,';
+            $return['status'] = 'error';
+        } else {
+            if (preg_match("/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/", $email) == 0){
+                $return['message'] .= 'Email Invalido,';
+                $return['status'] = 'error';
+            }
+        }
+
+        if ($area === 'NO') {
+            $return['message'] .= 'Area Requerida,';
+            $return['status'] = 'error';
+        }
+
+        if ($sexo === '') {
+            $return['message'] .= 'Sexo Requerido,';
+            $return['status'] = 'error';
+        } else {
+            if ($sexo !== 'M' && $sexo !== 'F'){
+                $return['message'] .= 'Sexo Invalido,';
+                $return['status'] = 'error';
+            }
+        }
+
+        if ($descrip === '') {
+            $return['message'] .= 'Descripcón Requerida,';
+            $return['status'] = 'error';
+        }
+
+        if ($return['status'] !== 'error'){
+            $return['data'] = [        
+                'nombre' => $nombre,
+                'email' => $email,
+                'area' => $area,
+                'sexo' => $sexo,
+                'descrip' => $descrip,
+                'boletin' => $boletin,
+            ];
+        }
+
         return $return;
     }
 
     private function storeEmpleados($data){
         
-        $usersQuery = "INSERT INTO empleados () VALUES ();";
+        $usersQuery = "INSERT INTO empleados (nombre,email,area_id,sexo,descripcion,boletin) 
+            VALUES (?,?,?,?,?,?);";
         
         $stmt = mysqli_prepare($this->dbconnect, $usersQuery);
         
-        mysqli_stmt_bind_param($stmt, 'ss', $orgUuid, $facilityId);
+        mysqli_stmt_bind_param($stmt, 'ssissi', $data['nombre'], 
+            $data['email'], $data['area'], $data['sexo'], $data['descrip'], 
+            $data['boletin']);
 
         mysqli_stmt_execute($stmt);
         
@@ -191,40 +246,6 @@ class Empleado
 
     }
 
-    /*private function completeDataFacility(string $facilityId = "", string $orgUuid = ""): array
-    {
-
-        $usersQuery = "
-            SELECT  pt.firstName,
-                    pt.lastName,
-                    user.firstname,
-                    user.lastname,
-                    rel.id
-            FROM patients pt
-            INNER JOIN relations rel
-                ON pt.patientId = rel.patient AND pt.orgUuid = rel.orgUuid
-            INNER JOIN user
-                ON rel.id = user.id
-            WHERE pt.orgUuid = ?
-            AND pt.facid = ?
-            AND rel.id in (SELECT email FROM unsubscribed_emails)
-        ";
-
-        $stmt = mysqli_prepare($this->dbconnect, $usersQuery);
-        mysqli_stmt_bind_param($stmt, 'ss', $orgUuid, $facilityId);
-
-        mysqli_stmt_execute($stmt);
-        $result = $stmt->get_result();
-        $stmt->close();
-
-        $unsubscribedUsers = [];
-
-        foreach ($result as $value) {
-            $unsubscribedUsers[] = $value;
-        }
-
-        return $unsubscribedUsers;
-    }*/
 
     
 }
