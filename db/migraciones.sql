@@ -1,48 +1,60 @@
-DROP TABLE IF EXISTS areas;
-CREATE TABLE areas
-   (
-      id int AUTO_INCREMENT,
-      nombre varchar(255),
-      PRIMARY KEY (ID)
-   );
-INSERT INTO areas (nombre) VALUES ('Administrativo');
-INSERT INTO areas (nombre) VALUES ('Ventas');
-INSERT INTO areas (nombre) VALUES ('Informatica');
-INSERT INTO areas (nombre) VALUES ('Operaciones');
+DROP TABLE IF EXISTS `empleado_rol`;
+DROP TABLE IF EXISTS `areas`;
+DROP TABLE IF EXISTS `empleados`;
+DROP TABLE IF EXISTS `roles`;
 
-DROP TABLE IF EXISTS roles;
-CREATE TABLE roles
+CREATE TABLE `areas`
    (
-      id int AUTO_INCREMENT,
-      nombre varchar(255),
+      `id` int,
+      `nombre` varchar(255),
       PRIMARY KEY (ID)
    );
 
-INSERT INTO roles (nombre) VALUES ('Profesional de proyectos - Desarrollador');
-INSERT INTO roles (nombre) VALUES ('Gerente estratégico');
-INSERT INTO roles (nombre) VALUES ('Auxiliar administrativo');
+INSERT INTO `areas` (`id`, `nombre`) VALUES
+(1, 'Administrativa y Financiera'),
+(2, 'Ingeniería'),
+(5, 'Desarrollo de Negocio'),
+(6, 'Proyectos'),
+(7, 'Servicios'),
+(8, 'Calidad');
 
-DROP TABLE IF EXISTS empleados;
-CREATE TABLE empleados
+
+CREATE TABLE `roles`
    (
-      id int AUTO_INCREMENT,
-      nombre varchar(255),
-      email varchar(255),
-      sexo char(1),
-      area_id int,
-      boletin int,
-      descripcion text,
-      PRIMARY KEY (ID),
-      FOREIGN KEY (area_id) REFERENCES areas(id)
+      `id` int,
+      `nombre` varchar(255),
+      PRIMARY KEY (`id`)
    );
 
-DROP TABLE IF EXISTS empleado_rol;
-CREATE TABLE empleado_rol
+INSERT INTO `roles` (`id`, `nombre`) VALUES
+(1, 'Desarrollador'),
+(2, 'Analista'),
+(3, 'Tester'),
+(4, 'Diseñador'),
+(5, 'Profesional PMO'),
+(6, 'Profesional de servicios'),
+(7, 'Auxiliar administrativo'),
+(8, 'Codirector');
+
+CREATE TABLE `empleados`
    (
-      id int AUTO_INCREMENT,
-      empleado_id int,
-      rol_id int,
-      PRIMARY KEY (ID),
-      FOREIGN KEY (empleado_id) REFERENCES empleados(id),
-      FOREIGN KEY (rol_id) REFERENCES roles(id)
+      `id` int AUTO_INCREMENT,
+      `nombre` varchar(255),
+      `email` varchar(255),
+      `sexo` char(1),
+      `area_id` int,
+      `boletin` int,
+      `descripcion` text,
+      PRIMARY KEY (`id`),
+      FOREIGN KEY (`area_id`) REFERENCES areas(`id`)
+   );
+
+CREATE TABLE `empleado_rol`
+   (
+      `id` int AUTO_INCREMENT,
+      `empleado_id` int,
+      `rol_id` int,
+      PRIMARY KEY (`id`),
+      FOREIGN KEY (`empleado_id`) REFERENCES empleados(`id`),
+      FOREIGN KEY (`rol_id`) REFERENCES roles(`id`)
    );
