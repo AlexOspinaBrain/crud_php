@@ -132,27 +132,47 @@ const editEmpleado = (id) =>{
       }).then(res=>res.json())
       .then(res => {
         if (res.data.length > 0) {
-            console.log(res.data)
+            
             res.data.map((element)=>{
 
                 const nombre = element.nombre;
                 const email = element.email;
-                const area = element.area;
+                const areaId = element.idarea;
+                const areaText = element.area;
                 const sexo = element.sexo;
-                const descrip = element.descrip;
+                const descrip = element.descripcion;
                 const boletin = element.boletin;
+                const idEmpl = element.id;
+                
 
                 const elemNombre = document.getElementById('nombre');
                 const elemEmail = document.getElementById('email');
                 const elemArea = document.getElementById('area');
-                const elemSexo = document.getElementById('sexo');
+                const elemSexo = document.getElementsByName('sexo');
                 const elemDescrip = document.getElementById('descrip');
                 const elemBoletin = document.getElementById('boletin');
+                const elemidEmpleado = document.getElementById('idEmpleado');
 
+                elemidEmpleado.value = idEmpl;
                 elemNombre.value = nombre;
                 elemEmail.value = email;
-                elemArea.value = area;
-                //elemSexo.value = sexo;
+                elemArea.value = areaId;
+
+                const options = elemArea.getElementsByTagName('option');
+                for(var j = 0; j < options.length; j++) {
+                    if(options[j].value === areaId) {
+                        options[j].selected = true;
+                    }
+                }
+
+                [areaId].selected = 'selected'
+
+                for(var i = 0; i < elemSexo.length; i++) {
+                    if(elemSexo[i].value === sexo.toLowerCase()) {
+                        elemSexo[i].checked = true;
+                    }
+                }
+                
                 elemDescrip.value = descrip;
                 if (boletin !== '0') {
                     elemBoletin.checked = true;

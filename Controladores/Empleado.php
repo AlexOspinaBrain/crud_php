@@ -8,7 +8,7 @@ require_once('../db/connect.php');
 // Headers
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: PATCH, GET, POST, DELETE");
+header("Access-Control-Allow-Methods: GET, POST, DELETE");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
@@ -48,9 +48,6 @@ class Empleado
             case 'POST':
                 $this->addEmpleado();
                 break;
-            case 'PATCH':
-                $this->updateEmpleado();
-                break;                
             case 'DELETE':
                 $this->deleteEmpleado();
                 break;
@@ -107,7 +104,11 @@ class Empleado
             $this->response['status'] = self::VALIDATIONERROR;
         } else {
             try {
-                $this->storeEmpleados($validation['data']);
+                if ($_POST['idEmpleado'] != ""){
+                    $this->updateEmpleado($validation['data'], $_POST['idEmpleado']);
+                } else {
+                    $this->storeEmpleados($validation['data']);
+                }
                 $this->response['status'] = self::SUCCESSHTTPSTATUS;
                 $this->response['message'] = "Empleado Guardado";
             } catch (Exception $e) {
@@ -140,10 +141,27 @@ class Empleado
      *
      * @param int id
      */
-    public function updateEmpleado()
+    private function updateEmpleado($data, $id)
     {
+        $usersQuery = "UPDATE empleados SET
+            nombre = ?,
+            email = ?,
+            area_id = ?,
+            sexo = ?,
+            descripcion = ?,
+            boletin= ?  
+            WHERE id = ?";
+    
+        $stmt = mysqli_prepare($this->dbconnect, $usersQuery);
+        
+        mysqli_stmt_bind_param($stmt, 'ssissii', $data['nombre'], 
+            $data['email'], $data['area'], $data['sexo'], $data['descrip'], 
+            $data['boletin'], $id);
 
-        exit(json_encode($this->response, JSON_UNESCAPED_UNICODE));
+        mysqli_stmt_execute($stmt);
+        
+        $stmt->close();
+
     }
 
     private function listEmpleados($id = 0){
@@ -152,7 +170,7 @@ class Empleado
         if ($id !== 0) {
             $filter = " WHERE empleados.id = '$id' ";
         }
-        $usersQuery = "SELECT empleados.id, empleados.nombre, email, sexo, areas.nombre as area,
+        $usersQuery = "SELECT empleados.id, empleados.nombre, descripcion, email, sexo, areas.id as idarea, areas.nombre as area,
                     boletin
                     FROM empleados 
                     INNER JOIN areas
