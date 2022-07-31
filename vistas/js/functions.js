@@ -178,7 +178,8 @@ const editEmpleado = (id) =>{
                     elemBoletin.checked = true;
                 } 
 
-
+                var modal = new bootstrap.Modal(document.getElementById('modalEmpleado'));
+                modal.show();
             });
         } else {
             alert('Empleado no existe');
