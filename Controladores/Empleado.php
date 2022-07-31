@@ -21,7 +21,6 @@ class Empleado
     private $requestMethod;
 
     private const SUCCESSHTTPSTATUS = 200;
-    private $validationFailedHTTPStatus = 400;
     private const VALIDATIONERROR = 400;
     private const SERVERERROR = 500;
 
@@ -82,12 +81,12 @@ class Empleado
     {
 
         try {
-            $this->response['data'] = $this->listEmpleados();
+            $this->response['data'] = $this->listEmpleados($_GET['id'] ?? 0);
             $this->response['message'] = "OK";
             $this->response['status'] = self::SUCCESSHTTPSTATUS;
         } catch (Exception $e) {
             $this->response['message'] = $e->getMessage();
-            $this->response['status'] = $this->validationFailedHTTPStatus;
+            $this->response['status'] = self::VALIDATIONERROR;
         }
         exit(json_encode($this->response, JSON_UNESCAPED_UNICODE));
     }
@@ -147,12 +146,18 @@ class Empleado
         exit(json_encode($this->response, JSON_UNESCAPED_UNICODE));
     }
 
-    private function listEmpleados(){
-        $usersQuery = "SELECT empleados.nombre, email, sexo, areas.nombre as area,
+    private function listEmpleados($id = 0){
+
+        $filter = "";
+        if ($id !== 0) {
+            $filter = " WHERE empleados.id = '$id' ";
+        }
+        $usersQuery = "SELECT empleados.id, empleados.nombre, email, sexo, areas.nombre as area,
                     boletin
                     FROM empleados 
                     INNER JOIN areas
                     ON empleados.area_id = areas.id
+                    $filter
                     ORDER BY empleados.nombre";
         
         $result = mysqli_query($this->dbconnect, $usersQuery);

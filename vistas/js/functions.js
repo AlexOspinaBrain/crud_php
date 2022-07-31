@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
             Eliminar
             </button></td>`;
 
-            tablaElement.innerHTML =`<tr>
+            tablaElement.innerHTML +=`<tr>
                 <td>${element.nombre}</td>
                 <td>${element.email}</td>
                 <td>${element.sexo}</td>
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </tr>`;
         });
       })
-      .catch(error => console.error('Error:', error))
+      .catch(error => console.error('Error:', error));
 
 
     const nuevoEmpleado = document.getElementById('guarda');
@@ -58,10 +58,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: data,
               }).then(res=>{
 
-                    var myModal = new bootstrap.Modal(document.getElementById('modalEmpleado'));
-                    myModal.hide();
-
-                    console.log('Empleado guardado con exito!');
+                    alert('Empleado guardado con exito!');
+                    location.reload();
+                    
               }).catch(error => console.error('Error:', error))
 
 
@@ -98,11 +97,11 @@ const valida_formulario = () => {
         errorMessage += `<p>Email requerido</p>`;
         passValidation = false;
     } else {
-        /*if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email.value))
+        if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email.value))
         {
             errorMessage += `<p>Email invalido</p>`;
             passValidation = false;
-        }*/
+        }
     }
     if (area.value === "NO"){
         errorMessage += `<p>Area requerida</p>`;
@@ -121,3 +120,51 @@ const valida_formulario = () => {
 
 }
 
+const editEmpleado = (id) =>{
+
+    const editData = new FormData();
+        editData.append('id', id);
+            
+
+    fetch(`../Controladores/Empleado.php?id=${id}`, {
+        method: 'GET',
+        
+      }).then(res=>res.json())
+      .then(res => {
+        if (res.data.length > 0) {
+            console.log(res.data)
+            res.data.map((element)=>{
+
+                const nombre = element.nombre;
+                const email = element.email;
+                const area = element.area;
+                const sexo = element.sexo;
+                const descrip = element.descrip;
+                const boletin = element.boletin;
+
+                const elemNombre = document.getElementById('nombre');
+                const elemEmail = document.getElementById('email');
+                const elemArea = document.getElementById('area');
+                const elemSexo = document.getElementById('sexo');
+                const elemDescrip = document.getElementById('descrip');
+                const elemBoletin = document.getElementById('boletin');
+
+                elemNombre.value = nombre;
+                elemEmail.value = email;
+                elemArea.value = area;
+                //elemSexo.value = sexo;
+                elemDescrip.value = descrip;
+                if (boletin !== '0') {
+                    elemBoletin.checked = true;
+                } 
+
+
+            });
+        } else {
+            alert('Empleado no existe');
+            location.reload();
+        }
+      })
+      .catch(error => console.error('Error:', error));
+
+}
