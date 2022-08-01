@@ -187,6 +187,10 @@ class Empleado
         
         $stmt->close();
 
+        if (count($data['roles']) > 0){
+            $this->storeRolEmpleado($data['roles'], $id);
+        }
+
     }
 
     private function listEmpleados($id = 0){
@@ -194,6 +198,7 @@ class Empleado
         $filter = "";
         if ($id !== 0) {
             $filter = " WHERE empleados.id = '$id' ";
+            $filterRol = " WHERE empleado_id = '$id' ";
         }
         $usersQuery = "SELECT empleados.id, empleados.nombre, descripcion, email, sexo, areas.id as idarea, areas.nombre as area,
                     boletin
@@ -206,7 +211,14 @@ class Empleado
         $result = mysqli_query($this->dbconnect, $usersQuery);
         $arrayResult = mysqli_fetch_all($result, MYSQLI_ASSOC);
         
-        return $arrayResult;
+        $usersQuery = "SELECT empleado_id, rol_id
+                FROM empleado_rol
+                $filterRol";
+
+        $result = mysqli_query($this->dbconnect, $usersQuery);
+        $arrayResultRoles = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+        return [$arrayResult, $arrayResultRoles];
 
     }
 
@@ -221,6 +233,8 @@ class Empleado
         $sexo = strtoupper($_POST['sexo']) ?? '';
         $descrip = $_POST['descrip'] ?? '';
         $boletin = $_POST['boletin'] ?? '';
+
+        $roles = explode(",", $_POST['roles']);
 
         if ($nombre === '') {
             $return['message'] .= 'Nombre Requerido,';
@@ -271,6 +285,7 @@ class Empleado
                 'sexo' => $sexo,
                 'descrip' => $descrip,
                 'boletin' => $boletin,
+                'roles' => $roles,
             ];
         }
 
@@ -289,11 +304,32 @@ class Empleado
             $data['boletin']);
 
         mysqli_stmt_execute($stmt);
-        
+        $id=$stmt->insert_id;
         $stmt->close();
+        
+        if (count($data['roles']) > 0){
+            $this->storeRolEmpleado($data['roles'], $id);
+        }
+
+        
 
     }
+    private function storeRolEmpleado($roles, $id = 0){
 
+        for($i=0; $i< count($roles); $i++){
+            $usersQuery = "INSERT INTO empleado_rol (empleado_id,rol_id) 
+            VALUES (?,?);";
+
+            $stmt = mysqli_prepare($this->dbconnect, $usersQuery);
+                    
+            mysqli_stmt_bind_param($stmt, 'ii', $id, $roles[$i]);
+
+            mysqli_stmt_execute($stmt);
+
+            $stmt->close();
+        }
+
+    }
     /**
      * Parse raw HTTP request data
      *

@@ -11,6 +11,24 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .catch(error => console.error('Error:', error))
 
+    fetch('../Controladores/Rol.php', {
+        method: 'GET',
+      }).then(res=>res.json())
+      .then(res => {
+        let selectElement = document.getElementById('roles');
+        res.data.map((element)=>{
+
+            selectElement.innerHTML +=`<div class="form-check">
+                <input class="form-check-input" type="checkbox" 
+                    value="${element.id}" id="rol_${element.id}">
+                <label class="form-check-label" for="rol_${element.id}">
+                    ${element.nombre}
+                </label>
+                </div>`;
+                
+        });
+      })
+      .catch(error => console.error('Error:', error))
 
     fetch('../Controladores/Empleado.php', {
         method: 'GET',
@@ -18,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(res => {
         let tablaElement = document.getElementById('tablaBody');
         let optionButtons;
-        res.data.map((element)=>{
+        res.data[0].map((element)=>{
 
             optionButtons = `<td><button type="button" class="btn btn-sm btn-primary"
               onclick="editEmpleado('${element.id}')">
@@ -49,9 +67,20 @@ document.addEventListener('DOMContentLoaded', function () {
             event.preventDefault();
 
             const data = new FormData(document.getElementById('formEmpleado'));
-                data.set('sexo', document.querySelector('input[name="sexo"]:checked').value);
-                data.set('boletin', document.getElementById('boletin').checked ? 1 : 0);
-                
+            
+            data.set('sexo', document.querySelector('input[name="sexo"]:checked').value);
+            data.set('boletin', document.getElementById('boletin').checked ? 1 : 0);
+
+            let roles = [];
+            const checks = document.querySelectorAll('input[type="checkbox"]:checked');
+            
+            checks.forEach(elem=>{
+                if (elem.name !== 'boletin'){
+                    roles.push(elem.value);
+                }
+            })
+            
+            data.set('roles', roles);
 
             fetch('../Controladores/Empleado.php', {
                 method: 'POST',
@@ -133,7 +162,7 @@ const editEmpleado = (id) =>{
       .then(res => {
         if (res.data.length > 0) {
             
-            res.data.map((element)=>{
+            res.data[0].map((element)=>{
 
                 const nombre = element.nombre;
                 const email = element.email;
@@ -144,6 +173,7 @@ const editEmpleado = (id) =>{
                 const boletin = element.boletin;
                 const idEmpl = element.id;
                 
+                const roles = res.data[1];
 
                 const elemNombre = document.getElementById('nombre');
                 const elemEmail = document.getElementById('email');
@@ -177,6 +207,19 @@ const editEmpleado = (id) =>{
                 if (boletin !== '0') {
                     elemBoletin.checked = true;
                 } 
+
+
+                const checks = document.querySelectorAll('input[type="checkbox"]');
+                
+                checks.forEach(elem=>{
+                    if (elem.name !== 'boletin'){
+                        roles.forEach(rol => {
+                            if (rol.rol_id === elem.value){
+                                elem.checked = true;
+                            }
+                        })
+                    }
+                })
 
                 var modal = new bootstrap.Modal(document.getElementById('modalEmpleado'));
                 modal.show();
