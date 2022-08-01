@@ -161,7 +161,7 @@ const editEmpleado = (id) =>{
       }).then(res=>res.json())
       .then(res => {
         if (res.data.length > 0) {
-            
+            limpiar();
             res.data[0].map((element)=>{
 
                 const nombre = element.nombre;
@@ -249,3 +249,20 @@ const deleteEmpleado = (id) =>{
       .catch(error => console.error('Error:', error));
 
 }
+
+function limpiar(){
+
+    document.querySelectorAll('input[type=text]').forEach(elem => {
+        elem.value = '';
+    });
+
+    const checks = document.querySelectorAll('input[type="checkbox"]');
+                
+    checks.forEach(elem=>{
+        elem.checked = false;
+    })
+
+    document.querySelector('select[name=area]').value = '';
+    document.querySelector("select[name=area] option[value=NO]").setAttribute("selected",true);
+
+};
