@@ -1,9 +1,8 @@
 <?php
 namespace Controladores;
 
-use Exception;
-
-require_once('../db/connect.php');
+use \Modelos\Rol;
+require_once('../Modelos/Rol.php');
 
 // Headers
 header("Access-Control-Allow-Origin: *");
@@ -12,19 +11,12 @@ header("Access-Control-Allow-Methods: GET");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-$requestMethod = $_SERVER["REQUEST_METHOD"];
-$controller = new Area($link, $requestMethod);
-$controller->httpMethod();
-
-class Area
+class RolController extends Rol
 {
     private $requestMethod;
 
     private const SUCCESSHTTPSTATUS = 200;
     private const TRYERROR = 400;
-    private const SERVERERROR = 500;
-
-    private $dbconnect;
 
     private $response = [
         "status" => NULL,
@@ -32,18 +24,17 @@ class Area
         "data" => []
     ];
 
-    public function __construct($link, $requestMethod)
+    public function __construct($requestMethod)
     {
+        parent::__construct();
         $this->requestMethod = $requestMethod;
-        $this->dbconnect = $link;
-        mysqli_report(MYSQLI_REPORT_ALL & ~MYSQLI_REPORT_INDEX);
     }
 
     public function httpMethod()
     {
         switch ($this->requestMethod) {
             case 'GET':
-                $this->getAreas();
+                $this->getRoles();
                 break;
             default:
                 $this->deniedMethodRequest();
@@ -68,34 +59,22 @@ class Area
      *
      * 
      */
-    public function getAreas()
+    public function getRoles()
     {
         try {
-            $this->response['data'] = $this->listAreas();
+            $this->response['data'] = $this->listRoles();
             $this->response['message'] = "OK";
             $this->response['status'] = self::SUCCESSHTTPSTATUS;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->response['message'] = $e->getMessage();
             $this->response['status'] = self::TRYERROR;
         }
         exit(json_encode($this->response, JSON_UNESCAPED_UNICODE));
     }
 
-
-    private function listAreas(){
-        $usersQuery = "SELECT id, nombre
-                    FROM areas
-                    ORDER BY id";
-        
-        $result = mysqli_query($this->dbconnect, $usersQuery, MYSQLI_USE_RESULT);
-
-
-        $arrayResult = mysqli_fetch_all($result, MYSQLI_ASSOC);
-        
-        return $arrayResult;
-
-    }
-
-    
-    
+   
 }
+
+$requestMethod = $_SERVER["REQUEST_METHOD"];
+$controller = new RolController($requestMethod);
+$controller->httpMethod();

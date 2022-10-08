@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    fetch('../Controladores/Area.php', {
+    fetch('../Controladores/AreaController.php', {
         method: 'GET',
       }).then(res=>res.json())
       .then(res => {
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .catch(error => console.error('Error:', error))
 
-    fetch('../Controladores/Rol.php', {
+    fetch('../Controladores/RolController.php', {
         method: 'GET',
       }).then(res=>res.json())
       .then(res => {
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .catch(error => console.error('Error:', error))
 
-    fetch('../Controladores/Empleado.php', {
+    fetch('../Controladores/EmpleadoController.php', {
         method: 'GET',
       }).then(res=>res.json())
       .then(res => {
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
             
             data.set('roles', roles);
 
-            fetch('../Controladores/Empleado.php', {
+            fetch('../Controladores/EmpleadoController.php', {
                 method: 'POST',
                 body: data,
               }).then(res=>{
@@ -155,7 +155,7 @@ const editEmpleado = (id) =>{
         editData.append('id', id);
             
 
-    fetch(`../Controladores/Empleado.php?id=${id}`, {
+    fetch(`../Controladores/EmpleadoController.php?id=${id}`, {
         method: 'GET',
         
       }).then(res=>res.json())
@@ -238,7 +238,7 @@ const deleteEmpleado = (id) =>{
     const deleteData = new FormData();
     deleteData.append('id', id);
 
-    fetch(`../Controladores/Empleado.php`, {
+    fetch(`../Controladores/EmpleadoController.php`, {
         method: 'DELETE',
         body: deleteData,
       }).then(res=>res.json())

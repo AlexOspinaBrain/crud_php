@@ -1,9 +1,9 @@
 <?php
 namespace Controladores;
 
-use Exception;
+use \Modelos\Empleado;
 
-require_once('../db/connect.php');
+require_once('../Modelos/Empleado.php');
 
 // Headers
 header("Access-Control-Allow-Origin: *");
@@ -12,11 +12,7 @@ header("Access-Control-Allow-Methods: GET, POST, DELETE");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-$requestMethod = $_SERVER["REQUEST_METHOD"];
-$controller = new Empleado($link, $requestMethod);
-$controller->httpMethod();
-
-class Empleado
+class EmpleadoController extends Empleado
 {
     private $requestMethod;
 
@@ -24,19 +20,16 @@ class Empleado
     private const VALIDATIONERROR = 400;
     private const SERVERERROR = 500;
 
-    private $dbconnect;
-
     private $response = [
         "status" => NULL,
         "message" => "error",
         "data" => []
     ];
 
-    public function __construct($link, $requestMethod)
+    public function __construct($requestMethod)
     {
+        parent::__construct();
         $this->requestMethod = $requestMethod;
-        $this->dbconnect = $link;
-        mysqli_report(MYSQLI_REPORT_ALL & ~MYSQLI_REPORT_INDEX);
     }
 
     public function httpMethod()
@@ -81,7 +74,7 @@ class Empleado
             $this->response['data'] = $this->listEmpleados($_GET['id'] ?? 0);
             $this->response['message'] = "OK";
             $this->response['status'] = self::SUCCESSHTTPSTATUS;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->response['message'] = $e->getMessage();
             $this->response['status'] = self::VALIDATIONERROR;
         }
@@ -111,7 +104,7 @@ class Empleado
                 }
                 $this->response['status'] = self::SUCCESSHTTPSTATUS;
                 $this->response['message'] = "Empleado Guardado";
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $this->response['message'] = $e->getMessage();
                 $this->response['status'] = self::SERVERERROR;
             }
@@ -136,90 +129,13 @@ class Empleado
             $this->eliminaEmpleado($params['id']);
             $this->response['status'] = self::SUCCESSHTTPSTATUS;
             $this->response['message'] = "Empleado Eliminado";
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->response['message'] = $e->getMessage();
             $this->response['status'] = self::SERVERERROR;
         }
 
         
         exit(json_encode($this->response, JSON_UNESCAPED_UNICODE));
-    }
-
-    private function eliminaEmpleado($id){
-        $usersQuery = "DELETE FROM empleados 
-            WHERE id = ?";
-
-        $stmt = mysqli_prepare($this->dbconnect, $usersQuery);
-        
-        mysqli_stmt_bind_param($stmt, 'i', $id);
-
-        mysqli_stmt_execute($stmt);
-        
-        $stmt->close();
-    }
-
-    /**
-     * UPDATE
-     *
-     * Description:
-     * Update 
-     *
-     * @param int id
-     */
-    private function updateEmpleado($data, $id)
-    {
-        $usersQuery = "UPDATE empleados SET
-            nombre = ?,
-            email = ?,
-            area_id = ?,
-            sexo = ?,
-            descripcion = ?,
-            boletin= ?  
-            WHERE id = ?";
-    
-        $stmt = mysqli_prepare($this->dbconnect, $usersQuery);
-        
-        mysqli_stmt_bind_param($stmt, 'ssissii', $data['nombre'], 
-            $data['email'], $data['area'], $data['sexo'], $data['descrip'], 
-            $data['boletin'], $id);
-
-        mysqli_stmt_execute($stmt);
-        
-        $stmt->close();
-
-        if (count($data['roles']) > 0){
-            $this->storeRolEmpleado($data['roles'], $id);
-        }
-
-    }
-
-    private function listEmpleados($id = 0){
-
-        $filter = "";
-        if ($id !== 0) {
-            $filter = " WHERE empleados.id = '$id' ";
-            $filterRol = " WHERE empleado_id = '$id' ";
-        }
-        $usersQuery = "SELECT empleados.id, empleados.nombre, descripcion, email, sexo, areas.id as idarea, areas.nombre as area,
-                    boletin
-                    FROM empleados 
-                    INNER JOIN areas
-                    ON empleados.area_id = areas.id
-                    $filter
-                    ORDER BY empleados.nombre";
-        
-        $result = mysqli_query($this->dbconnect, $usersQuery);
-        $arrayResult = mysqli_fetch_all($result, MYSQLI_ASSOC);
-        
-        $usersQuery = "SELECT empleado_id, rol_id
-                FROM empleado_rol
-                $filterRol";
-
-        $result = mysqli_query($this->dbconnect, $usersQuery);
-        $arrayResultRoles = mysqli_fetch_all($result, MYSQLI_ASSOC);
-
-        return [$arrayResult, $arrayResultRoles];
-
     }
 
     private function validationData(){
@@ -292,44 +208,7 @@ class Empleado
         return $return;
     }
 
-    private function storeEmpleados($data){
-        
-        $usersQuery = "INSERT INTO empleados (nombre,email,area_id,sexo,descripcion,boletin) 
-            VALUES (?,?,?,?,?,?);";
-        
-        $stmt = mysqli_prepare($this->dbconnect, $usersQuery);
-        
-        mysqli_stmt_bind_param($stmt, 'ssissi', $data['nombre'], 
-            $data['email'], $data['area'], $data['sexo'], $data['descrip'], 
-            $data['boletin']);
 
-        mysqli_stmt_execute($stmt);
-        $id=$stmt->insert_id;
-        $stmt->close();
-        
-        if (count($data['roles']) > 0){
-            $this->storeRolEmpleado($data['roles'], $id);
-        }
-
-        
-
-    }
-    private function storeRolEmpleado($roles, $id = 0){
-
-        for($i=0; $i< count($roles); $i++){
-            $usersQuery = "INSERT INTO empleado_rol (empleado_id,rol_id) 
-            VALUES (?,?);";
-
-            $stmt = mysqli_prepare($this->dbconnect, $usersQuery);
-                    
-            mysqli_stmt_bind_param($stmt, 'ii', $id, $roles[$i]);
-
-            mysqli_stmt_execute($stmt);
-
-            $stmt->close();
-        }
-
-    }
     /**
      * Parse raw HTTP request data
      *
@@ -392,3 +271,7 @@ class Empleado
     }
     
 }
+
+$requestMethod = $_SERVER["REQUEST_METHOD"];
+$controller = new EmpleadoController($requestMethod);
+$controller->httpMethod();
